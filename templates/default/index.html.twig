@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DefaultController!{% endblock %}
+
+{% block body %}
+
+<div class="table-responsive" id="mydatatable-container">
+    <table class="records_list table table-striped table-bordered table-hover" id="mydatatable">
+        <thead>
+            <tr>
+                <th>Column 1</th>
+                <th>Column 2</th>
+                <th>Column 3</th>
+                <th>Column 4</th>
+                <th>Column 5</th>
+                <th>Column 6</th>
+                <th>Column 7</th>
+                <th>Column 8</th>
+                <th>Column 9</th>
+                <th>Column 10</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+                <th>Filter..</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<style>
+#mydatatable tfoot input{
+    width: 100% !important;
+}
+#mydatatable tfoot {
+    display: table-header-group !important;
+}
+</style>
+
+<script type="text/javascript">
+dataSet = {
+    draw: 10,
+    data: [
+    {% for item in items %}
+        [
+            "{{ item.col1 }}",
+            "{{ item.col2 }}",
+            "{{ item.col3 }}",
+            "{{ item.col4 }}",
+            "{{ item.col5 }}",
+            "{{ item.col6 }}",
+            "{{ item.col7 }}",
+            "{{ item.col8 }}",
+            "{{ item.col9 }}",
+            "{{ item.col10 }}",
+        ]{% if not loop.last %},{% endif %}
+    {% endfor %}
+    ],
+    recordsTotal: {{ data.recordsTotal }},
+    recordsFiltered: {{ data.recordsTotal }}
+};
+
+$(document).ready(function() {
+    $('#mydatatable tfoot th').each( function () {
+        var title = $(this).text();
+        $(this).html( '<input type="text" placeholder="Filtrar.." />' );
+    } );
+
+    var table = $('#mydatatable').DataTable({
+        dom: 'B<"float-left"i><"float-right"f>t<"float-left"l><"float-right"p><"clearfix">',
+        responsive: false,
+        language: {
+            "url": "https://cdn.datatables.net/plug-ins/1.10.19/i18n/Spanish.json"
+        },
+        order: [[ 0, "desc" ]],
+        initComplete: function () {
+            this.api().columns().every( function () {
+                var that = this;
+
+                $( 'input', this.footer() ).on( 'keyup change', function () {
+                    if ( that.search() !== this.value ) {
+                        that
+                            .search( this.value )
+                            .draw();
+                        }
+                });
+            })
+        },
+        processing: true,
+        serverSide: true,
+        ordering: false,
+        ajax: "server-processing.php"
+    });
+});
+</script>
+{% endblock %}
