@@ -5,7 +5,7 @@
 {% block body %}
 
 <div class="table-responsive" id="mydatatable-container">
-    <table class="records_list table table-striped table-bordered table-hover" id="mydatatable">
+    <table class="records_list table table-striped table-bordered table-hover w-100" id="mydatatable">
         <thead>
             <tr>
                 <th>Column 1</th>
@@ -47,28 +47,6 @@
 </style>
 
 <script type="text/javascript">
-dataSet = {
-    draw: 10,
-    data: [
-    {% for item in items %}
-        [
-            "{{ item.col1 }}",
-            "{{ item.col2 }}",
-            "{{ item.col3 }}",
-            "{{ item.col4 }}",
-            "{{ item.col5 }}",
-            "{{ item.col6 }}",
-            "{{ item.col7 }}",
-            "{{ item.col8 }}",
-            "{{ item.col9 }}",
-            "{{ item.col10 }}",
-        ]{% if not loop.last %},{% endif %}
-    {% endfor %}
-    ],
-    recordsTotal: {{ data.recordsTotal }},
-    recordsFiltered: {{ data.recordsTotal }}
-};
-
 $(document).ready(function() {
     $('#mydatatable tfoot th').each( function () {
         var title = $(this).text();

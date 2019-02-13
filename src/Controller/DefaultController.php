@@ -18,13 +18,7 @@ class DefaultController extends AbstractController
             ->createQuery('SELECT count(sd) FROM App:SampleData sd')
             ->getSingleScalarResult();
 
-        $items = $entityManager
-            ->createQuery('SELECT sd FROM App:SampleData sd')
-            ->setMaxResults(12)
-            ->getResult();
-
         return $this->render('default/index.html.twig', [
-            'items' => $items,
             'data' => $data,
         ]);
     }
@@ -36,18 +30,15 @@ class DefaultController extends AbstractController
     {
         $entityManager = $this->getDoctrine()->getManager();
 
-        $recordsTotal = $entityManager
-            ->createQuery('SELECT count(sd) FROM App:SampleData sd')
-            ->getSingleScalarResult();
-
         /*var_dump($_GET['search']['value']);
         exit;*/
 
         $dql = 'SELECT sd FROM App:SampleData sd ';
+        $dqlCountFiltered = 'SELECT count(sd) FROM App:SampleData sd ';
 
         if (isset($_GET['search']['value'])) {
             $strMainSearch = $_GET['search']['value'];
-            $dql .= 'WHERE '
+            $sqlFilter = 'WHERE '
                 ."sd.col1 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col2 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col3 LIKE '%".$strMainSearch."%' OR "
@@ -58,11 +49,15 @@ class DefaultController extends AbstractController
                 ."sd.col8 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col9 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col10 LIKE '%".$strMainSearch."%' ";
+
+            $dql .= $sqlFilter;
+            $dqlCountFiltered .= $sqlFilter;
         }
 
         $items = $entityManager
             ->createQuery($dql)
-            ->setMaxResults(10)
+            ->setFirstResult($_GET['start'])
+            ->setMaxResults($_GET['length'])
             ->getResult();
 
         $data = [];
@@ -81,10 +76,18 @@ class DefaultController extends AbstractController
             ];
         }
 
+        $recordsTotal = $entityManager
+            ->createQuery('SELECT count(sd) FROM App:SampleData sd')
+            ->getSingleScalarResult();
+
+        $recordsFiltered = $entityManager
+            ->createQuery($dqlCountFiltered)
+            ->getSingleScalarResult();
+
         return $this->json([
             'draw' => 0,
             'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ]);
     }
