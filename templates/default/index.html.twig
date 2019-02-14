@@ -60,23 +60,38 @@ $(document).ready(function() {
             "url": "https://cdn.datatables.net/plug-ins/1.10.19/i18n/Spanish.json"
         },
         order: [[ 0, "desc" ]],
-        initComplete: function () {
+        processing: true,
+        serverSide: true,
+        ajax: "server-processing.php",
+        columnDefs: [
+            { "name": "col1", "targets": 0 },
+            { "name": "col2", "targets": 1 },
+            { "name": "col3", "targets": 2 },
+            { "name": "col4", "targets": 3 },
+            { "name": "col5", "targets": 4 },
+            { "name": "col6", "targets": 5 },
+            { "name": "col7", "targets": 6 },
+            { "name": "col8", "targets": 7 },
+            { "name": "col9", "targets": 8 },
+            { "name": "col10", "targets": 9 },
+        ],
+        "initComplete": function () {
             this.api().columns().every( function () {
                 var that = this;
 
-                $( 'input', this.footer() ).on( 'keyup change', function () {
-                    if ( that.search() !== this.value ) {
+                $( 'input', this.footer() ).on( 'keyup change', function (e) {
+
+                    if (e.which == 13) {
                         that
                             .search( this.value )
                             .draw();
-                        }
+                    }
+
                 });
+
             })
         },
-        processing: true,
-        serverSide: true,
-        ordering: false,
-        ajax: "server-processing.php"
+        searchDelay: 1000
     });
 });
 </script>

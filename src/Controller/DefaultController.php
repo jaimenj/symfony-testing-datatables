@@ -33,13 +33,15 @@ class DefaultController extends AbstractController
         /*var_dump($_GET['search']['value']);
         exit;*/
 
-        $dql = 'SELECT sd FROM App:SampleData sd ';
-        $dqlCountFiltered = 'SELECT count(sd) FROM App:SampleData sd ';
+        $dql = 'SELECT sd FROM App:SampleData sd';
+        $dqlCountFiltered = 'SELECT count(sd) FROM App:SampleData sd';
 
-        if (isset($_GET['search']['value'])) {
+        $sqlFilter = '';
+
+        if (!empty($_GET['search']['value'])) {
             $strMainSearch = $_GET['search']['value'];
-            $sqlFilter = 'WHERE '
-                ."sd.col1 LIKE '%".$strMainSearch."%' OR "
+
+            $sqlFilter .= " sd.col1 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col2 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col3 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col4 LIKE '%".$strMainSearch."%' OR "
@@ -53,6 +55,23 @@ class DefaultController extends AbstractController
             $dql .= $sqlFilter;
             $dqlCountFiltered .= $sqlFilter;
         }
+
+        foreach ($_GET['columns'] as $column) {
+            $strColSearch = $column['search']['value'];
+            if (!empty($column['search']['value'])) {
+                if (!empty($sqlFilter)) {
+                    $sqlFilter .= ' OR';
+                }
+                $sqlFilter .= ' sd.'.$column['name']." LIKE '%".$column['search']['value']."%'";
+            }
+        }
+
+        if (!empty($sqlFilter)) {
+            $dql .= ' WHERE'.$sqlFilter;
+            $dqlCountFiltered .= ' WHERE'.$sqlFilter;
+        }
+
+        //var_dump($dql); exit;
 
         $items = $entityManager
             ->createQuery($dql)
@@ -83,6 +102,8 @@ class DefaultController extends AbstractController
         $recordsFiltered = $entityManager
             ->createQuery($dqlCountFiltered)
             ->getSingleScalarResult();
+
+        //var_dump($data); exit;
 
         return $this->json([
             'draw' => 0,
