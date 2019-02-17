@@ -79,16 +79,13 @@ $(document).ready(function() {
             this.api().columns().every( function () {
                 var that = this;
 
-                $( 'input', this.footer() ).on( 'keyup change', function (e) {
-
-                    if (e.which == 13) {
+                $( 'input', this.footer() ).on( 'keyup change', function () {
+                    if ( that.search() !== this.value ) {
                         that
                             .search( this.value )
                             .draw();
-                    }
-
+                        }
                 });
-
             })
         },
         searchDelay: 1000

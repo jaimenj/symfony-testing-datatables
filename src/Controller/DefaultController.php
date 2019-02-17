@@ -41,7 +41,7 @@ class DefaultController extends AbstractController
         if (!empty($_GET['search']['value'])) {
             $strMainSearch = $_GET['search']['value'];
 
-            $sqlFilter .= " sd.col1 LIKE '%".$strMainSearch."%' OR "
+            $sqlFilter .= " (sd.col1 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col2 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col3 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col4 LIKE '%".$strMainSearch."%' OR "
@@ -50,25 +50,31 @@ class DefaultController extends AbstractController
                 ."sd.col7 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col8 LIKE '%".$strMainSearch."%' OR "
                 ."sd.col9 LIKE '%".$strMainSearch."%' OR "
-                ."sd.col10 LIKE '%".$strMainSearch."%' ";
-
-            $dql .= $sqlFilter;
-            $dqlCountFiltered .= $sqlFilter;
+                ."sd.col10 LIKE '%".$strMainSearch."%') ";
         }
 
+        // Filter columns with AND restriction
+        $strColSearch = '';
         foreach ($_GET['columns'] as $column) {
-            $strColSearch = $column['search']['value'];
             if (!empty($column['search']['value'])) {
-                if (!empty($sqlFilter)) {
-                    $sqlFilter .= ' OR';
+                if (!empty($strColSearch)) {
+                    $strColSearch .= ' AND ';
                 }
-                $sqlFilter .= ' sd.'.$column['name']." LIKE '%".$column['search']['value']."%'";
+                $strColSearch .= ' sd.'.$column['name']." LIKE '%".$column['search']['value']."%'";
             }
+        }
+        if (!empty($sqlFilter)) {
+            $sqlFilter .= ' AND ('.$strColSearch.')';
+        } else {
+            $sqlFilter .= $strColSearch;
         }
 
         if (!empty($sqlFilter)) {
             $dql .= ' WHERE'.$sqlFilter;
             $dqlCountFiltered .= ' WHERE'.$sqlFilter;
+            /*var_dump($dql);
+            var_dump($dqlCountFiltered);
+            exit;*/
         }
 
         //var_dump($dql); exit;
@@ -103,13 +109,13 @@ class DefaultController extends AbstractController
             ->createQuery($dqlCountFiltered)
             ->getSingleScalarResult();
 
-        //var_dump($data); exit;
-
         return $this->json([
             'draw' => 0,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
+            'dql' => $dql,
+            'dqlCountFiltered' => $dqlCountFiltered,
         ]);
     }
 }
